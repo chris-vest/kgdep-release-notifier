@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"flag"
-	"fmt"
+	"log"
+	"os"
 	"path/filepath"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -42,31 +44,52 @@ func main() {
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
 	// List Deployments
-	fmt.Printf("Listing deployments in namespace %q:\n", apiv1.NamespaceDefault)
-	a := make(map[string]string)
+	log.Printf("Searching deployments in namespace %q:\n", apiv1.NamespaceDefault)
+
 	list, err := deploymentsClient.List(metav1.ListOptions{})
 	if err != nil {
-		panic(err)
+		log.Fatalf("Could not get list deployments: %s", err)
 	}
 
-	// Shouldn't be a map, needs to be a slice
-	// We are interested in only the value, not the key
-	// In this case we are interested in the value, so we
-	// shouldn't use the blank identifier
-	for _, d := range list.Items {
-		fmt.Printf(" * %s with annotations: (%v)\n", d.Name, d.Annotations)
+	// Get length of deployments returned
+	i := len(list.Items)
+	// Make slice of strings with length i
+	repos := make([]string, i)
+
+	// Iterate over deployments and get annotations
+	for i, d := range list.Items {
+		log.Printf(" * %s with annotations: (%v)\n", d.Name, d.Annotations)
 		a := d.Annotations
-		_, ok := a["repo"]
-		fmt.Println("repo:", ok)
+
+		// If annotations have a key of "repo"...
+		if _, ok := a["repo"]; ok {
+			// Get value of key, "repo"
+			repo := a["repo"]
+			// Add value at index i to slice
+			repos[i] = repo
+		}
 	}
 
-	_, ok := a["repo"]
-	fmt.Println("repo:", ok)
+	log.Printf("Full slice of values: %v", repos)
 
-	// if _, ok := a["repo"]; ok {
-	// 	fmt.Println("Yeah buddy")
-	// 	for k := range a {
-	// 		fmt.Printf("key[%v] value[%v]\n", k, a[k])
-	// 	}
-	// }
+	// Write file
+	writeFile(repos)
+}
+
+func writeFile(toWrite []string) {
+	file, err := os.OpenFile("output", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatalf("Failed to create file: %s", err)
+	}
+
+	datawriter := bufio.NewWriter(file)
+
+	for i, data := range toWrite {
+		log.Printf("Writing file, index %v", i)
+		_, _ = datawriter.WriteString(data + "\n")
+	}
+
+	defer datawriter.Flush()
+	defer file.Close()
 }

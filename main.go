@@ -86,10 +86,10 @@ func writeFile(toWrite []string) {
 	datawriter := bufio.NewWriter(file)
 
 	for i, data := range toWrite {
-		log.Printf("Writing file, index %v", i)
+		log.Printf("Writing file, index %v with data %v", i, data)
 		_, _ = datawriter.WriteString(data + "\n")
 	}
 
-	defer datawriter.Flush()
-	defer file.Close()
+	datawriter.Flush()
+	file.Close()
 }

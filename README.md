@@ -1,5 +1,7 @@
 # kgdep-release-notfier
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/chris-vest/kgdep-release-notifier)](https://goreportcard.com/report/github.com/chris-vest/kgdep-release-notifier)
+
 Program to get annotations with the key `repo` and print the values to a file. 
 
 ## Next steps

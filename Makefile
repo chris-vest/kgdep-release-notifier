@@ -35,7 +35,7 @@ fmt:
 	$(GO) fmt $(PACKAGES)
 
 .PHONY: tests
-tests: test vet lint errcheck megacheck
+tests: test vet lint errcheck staticcheck
 
 .PHONY: vet
 vet:
@@ -55,12 +55,12 @@ errcheck:
 	fi
 	STATUS=0; for PKG in $(PACKAGES); do errcheck $$PKG || STATUS=1; done; exit $$STATUS
 
-.PHONY: megacheck
-megacheck:
-	@which megacheck > /dev/null; if [ $$? -ne 0  ]; then \
-		$(GO) get -u honnef.co/go/tools/cmd/megacheck; \
+.PHONY: staticcheck
+staticcheck:
+	@which staticcheck > /dev/null; if [ $$? -ne 0  ]; then \
+		$(GO) get -u honnef.co/go/tools/cmd/staticcheck; \
 	fi
-	STATUS=0; for PKG in $(PACKAGES); do megacheck $$PKG || STATUS=1; done; exit $$STATUS
+	STATUS=0; for PKG in $(PACKAGES); do staticcheck $$PKG || STATUS=1; done; exit $$STATUS
 
 .PHONY: test
 test:
